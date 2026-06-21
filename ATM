@@ -17,15 +17,6 @@ struct ClientData
 
 };
 
-bool ShouldContinue(const string& Message)
-{
-	char Response;
-	cout << Message;
-	cin >> Response;
-
-	return (Response == 'y' || Response == 'Y');
-}
-
 enum MainMenueItems {
 	ShowClientList = 1,
 	AddNewClient = 2,
@@ -34,6 +25,15 @@ enum MainMenueItems {
 	FindClient = 5,
 	Exit = 6
 };
+
+bool ShouldContinue(const string& Message)
+{
+	char Response;
+	cout << Message;
+	cin >> Response;
+
+	return (Response == 'y' || Response == 'Y');
+}
 
 vector<string> SplitString(string S1, const string& Delim)
 {
@@ -56,20 +56,6 @@ vector<string> SplitString(string S1, const string& Delim)
 	return vString;
 }
 
-
-string ConverRecoredToLine(ClientData& ClientData, string Seperator = "#//#")
-{
-	string Line = "";
-	Line += ClientData.AccountNumber + Seperator;
-	Line += ClientData.PINCode + Seperator;
-	Line += ClientData.ClientName + Seperator;
-	Line += ClientData.PhoneNumber + Seperator;
-	Line += to_string(ClientData.AccountBalanced);
-
-	return Line;
-
-}
-
 ClientData ConverLineToRecored(string& line, string Dlime = "#//#")
 {
 	vector<string> vString;
@@ -90,7 +76,6 @@ ClientData ConverLineToRecored(string& line, string Dlime = "#//#")
 
 	return Client;
 }
-
 
 void LoadDataFromFileToVector(string FileName, vector<ClientData>& VFileContent)
 {
@@ -115,128 +100,21 @@ void LoadDataFromFileToVector(string FileName, vector<ClientData>& VFileContent)
 		Myfile.close();
 	}
 }
-bool ClientIsExist(vector<ClientData>& VClientData, string& AccountNumber, ClientData& PClient)
+
+string ConverRecoredToLine(ClientData& ClientData, string Seperator = "#//#")
 {
+	string Line = "";
+	Line += ClientData.AccountNumber + Seperator;
+	Line += ClientData.PINCode + Seperator;
+	Line += ClientData.ClientName + Seperator;
+	Line += ClientData.PhoneNumber + Seperator;
+	Line += to_string(ClientData.AccountBalanced);
 
-
-	for (ClientData& Client : VClientData)
-	{
-		if (Client.AccountNumber == AccountNumber)
-		{
-			PClient = Client;
-
-			return true;
-		}
-
-
-
-	}
-
-	return false;
+	return Line;
 
 }
 
-void ReadNewClientData(ClientData& ClientsData, vector<ClientData>& VClientData)
-{
 
-
-	bool Exist;
-
-	do
-	{
-		cout << "Enter Account Number ? ";
-		getline(cin >> ws, ClientsData.AccountNumber);
-		cout << "\n";
-		bool IsExist = ClientIsExist(VClientData, ClientsData.AccountNumber, ClientsData);
-		Exist = IsExist;
-		if (!(IsExist))
-		{
-			cout << "Enter PinCode? ";
-			getline(cin, ClientsData.PINCode);
-			cout << "\n";
-
-			cout << "Enter Name? ";
-			getline(cin, ClientsData.ClientName);
-			cout << "\n";
-
-			cout << "Enter Phone? ";
-			getline(cin, ClientsData.PhoneNumber);
-			cout << "\n";
-
-			cout << "Enter Account Balance? ";
-			cin >> ClientsData.AccountBalanced;
-		}
-		else
-		{
-			cout << "This Client Is Aready Esisit Please  enter diffrance Account Number\n";
-		}
-	} while (Exist);
-
-
-
-}
-
-void AddDataLineToFile(const string& FileName, const string& DataLine, unsigned int Clientsnumber)
-{
-
-	fstream MyFile;
-	MyFile.open(FileName, ios::out | ios::app);
-	if (MyFile.is_open())
-	{
-		if (Clientsnumber != 0)
-		{
-			MyFile << endl << DataLine;
-		}
-		else
-		{
-			MyFile << DataLine;
-		}
-
-		MyFile.close();
-	}
-
-}
-
-void ShowMainMenueScrean()
-{
-	system("cls");
-
-	cout << "=================================================\n";
-	cout << "\t\tMain Menue Screan\n";
-	cout << "=================================================\n";
-	cout << "\t[1] Show Client List.\n";
-	cout << "\t[2] Add New Client.\n";
-	cout << "\t[3] Delete Client.\n";
-	cout << "\t[4] updata Client Info.\n";
-	cout << "\t[5] Find Client.\n";
-	cout << "\t[6] Exit.\n";
-	cout << "=================================================\n";
-}
-
-MainMenueItems ReadUserChoiceFromMainMenue()
-{
-	short Userchoice = 0;
-	do {
-
-		cout << "choice choice what you want to do ? [1 to 6]\n";
-
-		cin >> Userchoice;
-
-
-	} while (Userchoice < 0 && Userchoice > 7);
-	return (MainMenueItems)Userchoice;
-}
-
-void AddDataLineToFile(string FileName, string stDataLine)
-{
-	fstream MyFile;
-	MyFile.open(FileName, ios::out | ios::app);
-	if (MyFile.is_open())
-	{
-		MyFile << stDataLine << endl;
-		MyFile.close();
-	}
-}
 
 void SaveVectorToFile(string FileName, vector<ClientData>& VClientData)
 {
@@ -258,6 +136,72 @@ void SaveVectorToFile(string FileName, vector<ClientData>& VClientData)
 	}
 }
 
+string ReadAccountNumber(const string& Message)
+{
+
+	string AccountNumber = "";
+	cout << "Please Enter Account Number ? ";
+	getline(cin >> ws, AccountNumber);
+	return AccountNumber;
+}
+
+bool ClientIsExist(vector<ClientData>& VClientData, string& AccountNumber, ClientData& PClient)
+{
+
+	for (ClientData& Client : VClientData)
+	{
+		if (Client.AccountNumber == AccountNumber)
+		{
+			PClient = Client;
+
+			return true;
+		}
+
+	}
+
+	return false;
+}
+
+void ReadNewClientDataToUpdating(ClientData& ClientData)
+{
+
+	cout << "Adding New Client Data:\n\n";
+
+	cout << "Enter PinCode? ";
+	getline(cin >> ws, ClientData.PINCode);
+	cout << "\n";
+
+	cout << "Enter Name? ";
+	getline(cin, ClientData.ClientName);
+	cout << "\n";
+
+	cout << "Enter Phone? ";
+	getline(cin, ClientData.PhoneNumber);
+	cout << "\n";
+
+	cout << "Enter Account Balance? ";
+	cin >> ClientData.AccountBalanced;
+
+}
+
+void printClientInfo(bool IsExist, ClientData& Client, string& AccountNumber)
+{
+	if (IsExist)
+	{
+		cout << "\n\t\tThe following are the client details:\n\n";
+		cout << setw(17) << left << "Account Number" << ":" << Client.AccountNumber << endl;
+		cout << setw(17) << left << "PIN Code" << ":" << Client.PINCode << endl;
+		cout << setw(17) << left << "Name" << ":" << Client.ClientName << endl;
+		cout << setw(17) << left << "Phone" << ":" << Client.PhoneNumber << endl;
+		cout << setw(17) << left << "Account Balanced" << ":" << Client.AccountBalanced << endl;
+
+	}
+	else
+	{
+		cout << "\nClient With Account Number(" << AccountNumber << ") is Not Found : \n";
+	}
+}
+
 void ShowedClientsHeader(const vector<ClientData>& VFileConten)
 {
 	cout << "\n\t\t\t\t\tClient List (" << VFileConten.size() << ")" << endl;
@@ -273,11 +217,6 @@ void ShowedClientsHeader(const vector<ClientData>& VFileConten)
 
 	cout << "===================================================================================================\n\n";
 }
-
-
-
-
-
 
 void ShowedClientBody(vector<ClientData>& VClientData)
 {
@@ -299,6 +238,14 @@ void ShowedClientBody(vector<ClientData>& VClientData)
 
 }
 
+void ShowedClients(const string& ClientsFileName, vector<ClientData>& VClientData)
+{
+
+	ShowedClientsHeader(VClientData);
+	ShowedClientBody(VClientData);
+
+}
+
 void ShowAddNewClientsScreen()
 {
 	system("cls");
@@ -307,23 +254,33 @@ void ShowAddNewClientsScreen()
 	cout << "\n-----------------------------------\n";
 	cout << "Adding New Client:\n\n";
 }
-void ShowDeleteClientScreen() {
-	cout << "--------------------------------------------------\n";
-	cout << "\t\tDelete Client Screen\n";
-	cout << "--------------------------------------------------\n";
-}
 
-void ShowUpdateClientScreen() {
-	cout << "--------------------------------------------------\n";
-	cout << "\t\tUpdate Client Screen\n";
-	cout << "--------------------------------------------------\n";
-}
+void ReadNewClientData(ClientData& ClientsData, vector<ClientData>& VClientData)
+{
+	bool Exist;
 
+	do
+	{
+		cout << "Enter Account Number ? ";
 
-void ShowFindClientScreen() {
-	cout << "--------------------------------------------------\n";
-	cout << "\t\tFind Client Screen\n";
-	cout << "--------------------------------------------------\n";
+		getline(cin >> ws, ClientsData.AccountNumber);
+
+		cout << "\n";
+
+		bool IsExist = ClientIsExist(VClientData, ClientsData.AccountNumber, ClientsData);
+		
+		Exist = IsExist;
+
+		if (!(IsExist))
+		{
+			ReadNewClientDataToUpdating(ClientsData);
+		}
+		else
+		{
+			cout << "This Client Is Aready Esisit Please  enter diffrance Account Number\n";
+		}
+
+	} while (Exist);
 }
 
 void AddNewClients(vector<ClientData>& vClients)
@@ -338,32 +295,10 @@ void AddNewClients(vector<ClientData>& vClients)
 	SaveVectorToFile(ClientsFileName, vClients);
 }
 
-void ShowedClients(const string& ClientsFileName, vector<ClientData>& VClientData)
-{
-
-	ShowedClientsHeader(VClientData);
-	ShowedClientBody(VClientData);
-
-}
-
-
-
-void printClientInfo(bool IsExist, ClientData& Client, string& AccountNumber)
-{
-	if (IsExist)
-	{
-		cout << "\n\t\tThe following are the client details:\n\n";
-		cout << setw(17) << left << "Account Number" << ":" << Client.AccountNumber << endl;
-		cout << setw(17) << left << "PIN Code" << ":" << Client.PINCode << endl;
-		cout << setw(17) << left << "Name" << ":" << Client.ClientName << endl;
-		cout << setw(17) << left << "Phone" << ":" << Client.PhoneNumber << endl;
-		cout << setw(17) << left << "Account Balanced" << ":" << Client.AccountBalanced << endl;
-
-	}
-	else
-	{
-		cout << "\nClient With Account Number(" << AccountNumber << ") is Not Found : \n";
-	}
+void ShowDeleteClientScreen() {
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tDelete Client Screen\n";
+	cout << "--------------------------------------------------\n";
 }
 
 bool ConfirmDelete(const string& MessageDeleting) {
@@ -373,18 +308,10 @@ bool ConfirmDelete(const string& MessageDeleting) {
 	return (Response == 'y' || Response == 'Y');
 }
 
-string ReadAccountNumber(const string& Message)
-{
-
-	string AccountNumber = "";
-	cout << "Please Enter Account Number ? ";
-	getline(cin >> ws, AccountNumber);
-	return AccountNumber;
-}
-
 void DeleteRecordFromFile(const string& ClientsFileName, vector<ClientData>& VClientData, ClientData& PClient)
 {
 	ShowDeleteClientScreen();
+
 	string ClientAccountWantedToDeleted = ReadAccountNumber("Please Enter Your Account Number ?");
 
 	bool IsExist = ClientIsExist(VClientData, ClientAccountWantedToDeleted, PClient);
@@ -395,7 +322,6 @@ void DeleteRecordFromFile(const string& ClientsFileName, vector<ClientData>& VCl
 
 		if (ConfirmDelete("\nAre you sure you want to delete this client? (Y/N): "))
 		{
-
 			unsigned int WriteIndex = 0;
 
 			unsigned int VectorSize = VClientData.size();
@@ -415,11 +341,9 @@ void DeleteRecordFromFile(const string& ClientsFileName, vector<ClientData>& VCl
 				VectorSize--;
 			}
 
-
 			SaveVectorToFile(ClientsFileName, VClientData);
 
 			cout << "The Deleted Is Successfully";
-
 		}
 
 		else
@@ -433,34 +357,14 @@ void DeleteRecordFromFile(const string& ClientsFileName, vector<ClientData>& VCl
 	else
 	{
 		cout << "\nClient With Account Number(" << ClientAccountWantedToDeleted << ") is Not Found : \n";
-
 	}
-
 }
 
 
-
-void ReadNewClientDataToUpdating(ClientData& ClientData)
-{
-
-
-	cout << "Adding New Client Data:\n\n";
-
-	cout << "Enter PinCode? ";
-	getline(cin >> ws, ClientData.PINCode);
-	cout << "\n";
-
-	cout << "Enter Name? ";
-	getline(cin, ClientData.ClientName);
-	cout << "\n";
-
-	cout << "Enter Phone? ";
-	getline(cin, ClientData.PhoneNumber);
-	cout << "\n";
-
-	cout << "Enter Account Balance? ";
-	cin >> ClientData.AccountBalanced;
-
+void ShowUpdateClientScreen() {
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tUpdate Client Screen\n";
+	cout << "--------------------------------------------------\n";
 }
 
 void UpdateRecordInFile(string ClientsFileName, string& Record, ClientData& NewClientData, vector<ClientData>& VClientData)
@@ -479,18 +383,20 @@ void UpdateRecordInFile(string ClientsFileName, string& Record, ClientData& NewC
 	SaveVectorToFile(ClientsFileName, VClientData);
 }
 
-
 void UpdataClientData(string ClientsFileName, vector<ClientData>& VClientData, ClientData& NewClientData)
 {
 	ShowUpdateClientScreen();
+	
 	string AccountNumber = "";
 
 	AccountNumber = ReadAccountNumber("Please Enter Your Account Number You Want To Updata It ? \n");
+	
 	bool IsExist = ClientIsExist(VClientData, AccountNumber, NewClientData);
 
 	if (IsExist)
 	{
 		printClientInfo(true, NewClientData, AccountNumber);
+
 		if (ShouldContinue("Do You Wante To Continue Updating Client Data ?"))
 		{
 			ReadNewClientDataToUpdating(NewClientData);
@@ -503,18 +409,18 @@ void UpdataClientData(string ClientsFileName, vector<ClientData>& VClientData, C
 				cout << "\nUpdataing Client Data Canceled \n";
 			}
 		}
-
-
-
 	}
 	else
 	{
 		cout << "\nThis Client Not Found\n";
-
 		return;
 	}
+}
 
-
+void ShowFindClientScreen() {
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tFind Client Screen\n";
+	cout << "--------------------------------------------------\n";
 }
 
 void FindAndShowClient(vector<ClientData>& VClientData)
@@ -582,9 +488,38 @@ void ExcutetUserChoice(MainMenueItems UserChoice, vector<ClientData>& VClientDat
 
 	default:
 		break;
-
 	}
 
+}
+
+void ShowMainMenueScrean()
+{
+	system("cls");
+
+	cout << "=================================================\n";
+	cout << "\t\tMain Menue Screan\n";
+	cout << "=================================================\n";
+	cout << "\t[1] Show Client List.\n";
+	cout << "\t[2] Add New Client.\n";
+	cout << "\t[3] Delete Client.\n";
+	cout << "\t[4] updata Client Info.\n";
+	cout << "\t[5] Find Client.\n";
+	cout << "\t[6] Exit.\n";
+	cout << "=================================================\n";
+}
+
+MainMenueItems ReadUserChoiceFromMainMenue()
+{
+	short Userchoice = 0;
+	do {
+
+		cout << "choice choice what you want to do ? [1 to 6]\n";
+
+		cin >> Userchoice;
+
+
+	} while (Userchoice < 0 && Userchoice > 7);
+	return (MainMenueItems)Userchoice;
 }
 
 void RunATMService()
@@ -601,8 +536,6 @@ void RunATMService()
 
 	} while (UserChoice != MainMenueItems::Exit);
 }
-
-
 
 int main()
 {
