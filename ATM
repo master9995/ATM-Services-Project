@@ -23,7 +23,15 @@ enum MainMenueItems {
 	DeleteClien = 3,
 	updataClientInfo = 4,
 	FindClient = 5,
-	Exit = 6
+	Transactions = 6,
+	Exit = 7
+};
+
+enum enTransactions {
+	Deposit = 1,
+	WithDraw = 2,
+	TotalBalanced = 3,
+	MainMenu = 4,
 };
 
 bool ShouldContinue(const string& Message)
@@ -138,22 +146,21 @@ void SaveVectorToFile(string FileName, vector<ClientData>& VClientData)
 
 string ReadAccountNumber(const string& Message)
 {
-
 	string AccountNumber = "";
 	cout << "Please Enter Account Number ? ";
 	getline(cin >> ws, AccountNumber);
 	return AccountNumber;
 }
 
-bool ClientIsExist(vector<ClientData>& VClientData, string& AccountNumber, ClientData& PClient)
+bool ClientIsExist(vector<ClientData>& VClientData, string& AccountNumber, ClientData& PClient, ClientData*& TargetClient)
 {
 
 	for (ClientData& Client : VClientData)
 	{
 		if (Client.AccountNumber == AccountNumber)
 		{
+			TargetClient = &Client;
 			PClient = Client;
-
 			return true;
 		}
 
@@ -165,7 +172,7 @@ bool ClientIsExist(vector<ClientData>& VClientData, string& AccountNumber, Clien
 void ReadNewClientDataToUpdating(ClientData& ClientData)
 {
 
-	cout << "Adding New Client Data:\n\n";
+	
 
 	cout << "Enter PinCode? ";
 	getline(cin >> ws, ClientData.PINCode);
@@ -188,12 +195,14 @@ void printClientInfo(bool IsExist, ClientData& Client, string& AccountNumber)
 {
 	if (IsExist)
 	{
-		cout << "\n\t\tThe following are the client details:\n\n";
+		cout << "\n\tThe following are the client details:\n";
+		cout << "--------------------------------------------------\n";
 		cout << setw(17) << left << "Account Number" << ":" << Client.AccountNumber << endl;
 		cout << setw(17) << left << "PIN Code" << ":" << Client.PINCode << endl;
 		cout << setw(17) << left << "Name" << ":" << Client.ClientName << endl;
 		cout << setw(17) << left << "Phone" << ":" << Client.PhoneNumber << endl;
 		cout << setw(17) << left << "Account Balanced" << ":" << Client.AccountBalanced << endl;
+		cout << "--------------------------------------------------\n";
 
 	}
 	else
@@ -267,8 +276,10 @@ void ReadNewClientData(ClientData& ClientsData, vector<ClientData>& VClientData)
 
 		cout << "\n";
 
-		bool IsExist = ClientIsExist(VClientData, ClientsData.AccountNumber, ClientsData);
-		
+		ClientData* TargetClient = NULL;
+
+		bool IsExist = ClientIsExist(VClientData, ClientsData.AccountNumber, ClientsData, TargetClient);
+
 		Exist = IsExist;
 
 		if (!(IsExist))
@@ -314,7 +325,9 @@ void DeleteRecordFromFile(const string& ClientsFileName, vector<ClientData>& VCl
 
 	string ClientAccountWantedToDeleted = ReadAccountNumber("Please Enter Your Account Number ?");
 
-	bool IsExist = ClientIsExist(VClientData, ClientAccountWantedToDeleted, PClient);
+	ClientData* TargetClient = NULL;
+
+	bool IsExist = ClientIsExist(VClientData, ClientAccountWantedToDeleted, PClient, TargetClient);
 
 	if (IsExist)
 	{
@@ -386,12 +399,14 @@ void UpdateRecordInFile(string ClientsFileName, string& Record, ClientData& NewC
 void UpdataClientData(string ClientsFileName, vector<ClientData>& VClientData, ClientData& NewClientData)
 {
 	ShowUpdateClientScreen();
-	
+
 	string AccountNumber = "";
 
 	AccountNumber = ReadAccountNumber("Please Enter Your Account Number You Want To Updata It ? \n");
-	
-	bool IsExist = ClientIsExist(VClientData, AccountNumber, NewClientData);
+
+	ClientData* TargetClient = NULL;
+
+	bool IsExist = ClientIsExist(VClientData, AccountNumber, NewClientData, TargetClient);
 
 	if (IsExist)
 	{
@@ -417,19 +432,21 @@ void UpdataClientData(string ClientsFileName, vector<ClientData>& VClientData, C
 	}
 }
 
-void ShowFindClientScreen() {
+void ShowFindClientScreen()
+{
 	cout << "--------------------------------------------------\n";
 	cout << "\t\tFind Client Screen\n";
 	cout << "--------------------------------------------------\n";
 }
 
-void FindAndShowClient(vector<ClientData>& VClientData)
+void FindAndShowClient(vector<ClientData>& VClientData, ClientData& Client)
 {
 	ShowFindClientScreen();
 	string AccountNumber = ReadAccountNumber("Please Enter Account Number: ");
-	ClientData Client;
 
-	if (ClientIsExist(VClientData, AccountNumber, Client))
+	ClientData* TargetClient = NULL;
+
+	if (ClientIsExist(VClientData, AccountNumber, Client, TargetClient))
 	{
 		printClientInfo(true, Client, AccountNumber);
 	}
@@ -441,10 +458,246 @@ void FindAndShowClient(vector<ClientData>& VClientData)
 	}
 }
 
+void ShowTransactionsScreen()
+{
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tTransactions Menu Screen\n";
+	cout << "--------------------------------------------------\n";
+}
+
+
+void ShowTransactionsMenuSceern()
+{
+	cout << "=================================================\n";
+	cout << "\tTransactions Menu Sceern\n";
+	cout << "=================================================\n";
+	cout << "\t[1] Deposit.\n";
+	cout << "\t[2] withdraw.\n";
+	cout << "\t[3] Total Balanced.\n";
+	cout << "\t[4] Main Menu.\n";
+	cout << "=================================================\n";
+}
+
+enTransactions ReadTransactionProcess(const string& Message)
+{
+	short Choice = 0;
+	do {
+
+		cout << Message << "\n";
+
+		cin >> Choice;
+
+	} while (Choice <= 0 || Choice > 4);
+
+	return (enTransactions)Choice;
+}
+
+void ShowDepositScreen()
+{
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tDeposit Screen\n";
+	cout << "--------------------------------------------------\n";
+}
+
+double ReadTransactionAmount(const string& Message)
+{
+	double DepositAmount = 0;
+	do
+	{
+		cout << Message << "\n";
+		cin >> DepositAmount;
+
+	} while (DepositAmount <= 0);
+
+	return DepositAmount;
+
+}
+
+void DepositProcess(vector<ClientData>& VClientData, ClientData& Client)
+{
+	ShowDepositScreen();
+
+	string AccountNumber = ReadAccountNumber("Please Enter Account Number: ");
+
+	ClientData* TargetClient = NULL;
+
+	if (ClientIsExist(VClientData, AccountNumber, Client, TargetClient))
+	{
+		printClientInfo(true, Client, AccountNumber);
+
+		double DepositAmount = ReadTransactionAmount("please enter deposit amount ?");
+
+		if (ShouldContinue("are you are you sure you want to perform this transaction ? (Y) OR (N)\n"))
+		{
+			TargetClient->AccountBalanced += DepositAmount;
+
+			SaveVectorToFile(ClientsFileName, VClientData);
+		}
+	}
+	else
+	{
+		cout << "\n-----------------------------------";
+		cout << "\nSorry, this client was not found!";
+		cout << "\n-----------------------------------\n";
+	}
+
+}
+
+void ShowWithdrawScreen()
+{
+	cout << "--------------------------------------------------\n";
+	cout << "\t\tWithdraw Screen\n";
+	cout << "--------------------------------------------------\n";
+}
+
+
+void WithdrawProcess(vector<ClientData>& VClientData, ClientData& Client)
+{
+	double DepositAmount = 0;
+	ShowWithdrawScreen();
+
+	string AccountNumber = ReadAccountNumber("Please Enter Account Number: ");
+
+	ClientData* TargetClient = NULL;
+
+	if (ClientIsExist(VClientData, AccountNumber, Client, TargetClient))
+	{
+		printClientInfo(true, Client, AccountNumber);
+
+		DepositAmount = ReadTransactionAmount("please enter deposit amount ?");
+		do {
+
+			if (Client.AccountBalanced >= DepositAmount)
+			{
+				if (ShouldContinue("are you are you sure you want to perform this transaction ? (Y) OR (N)\n"))
+				{
+					TargetClient->AccountBalanced -= DepositAmount;
+
+					SaveVectorToFile(ClientsFileName, VClientData);
+					cout << "\n Successful Deposit :-) \n";
+				}
+			}
+			else
+			{
+				cout << "Amount Exceeds the balance, you can withdraw up to : " << Client.AccountBalanced;
+				DepositAmount = ReadTransactionAmount(" please enter Another amount ?");
+
+				if (Client.AccountBalanced >= DepositAmount)
+				{
+					if (ShouldContinue("are you are you sure you want to perform this transaction ? (Y) OR (N)\n"))
+					{
+						TargetClient->AccountBalanced -= DepositAmount;
+
+						SaveVectorToFile(ClientsFileName, VClientData);
+						cout << "\n Successful Deposit :-) \n";
+					}
+				}
+			}
+		} while (Client.AccountBalanced < DepositAmount);
+
+
+	}
+	else
+	{
+		cout << "\n-----------------------------------";
+		cout << "\nSorry, this client was not found!";
+		cout << "\n-----------------------------------\n";
+	}
+
+}
+
+void ShowedClientsHeaderForToalAmount(const vector<ClientData>& VFileConten)
+{
+	cout << "\n\t\t\tClient List (" << VFileConten.size() << ")." << endl;
+	cout << "==============================================================\n\n";
+
+	cout <<
+		"| " << left << setw(20) << "Account Number" <<
+		"| " << left << setw(20) << "Client Name" <<
+		"| " << left << setw(15) << "Balance" <<
+		"|\n" << endl;
+
+	cout << "==============================================================\n";
+}
+
+void ShowedClientBodyForTransaction(vector<ClientData>& VClientData)
+{
+	double TotalAmount = 0;
+
+	for (const ClientData& Client : VClientData)
+	{
+
+
+		cout <<
+			"| " << left << setw(20) << Client.AccountNumber <<
+			"| " << left << setw(20) << Client.ClientName <<
+			"| " << left << setw(15) << Client.AccountBalanced <<
+			"|" << endl;
+		TotalAmount += Client.AccountBalanced;
+	}
+	cout << "==============================================================\n\n";
+	cout << "\t\tTotal Balanced = " << TotalAmount;
+}
+
+void ShowedTotalAmount(const string& ClientsFileName, vector<ClientData>& VClientData)
+{
+
+	ShowedClientsHeaderForToalAmount(VClientData);
+	ShowedClientBodyForTransaction(VClientData);
+
+}
+
 void GoBackToMainMenue()
 {
 	cout << "\n\nPress any key to go back to Main Menue...";
 	system("pause>0");
+}
+
+void ExcutetUserChoiceForTransactions(enTransactions TransactionType, vector<ClientData>& VClientData, ClientData& PClient)
+{
+	switch (TransactionType)
+	{
+	case enTransactions::Deposit:
+		system("cls");
+		DepositProcess(VClientData, PClient);
+		GoBackToMainMenue();
+		break;
+
+	case enTransactions::WithDraw:
+		system("cls");
+		WithdrawProcess(VClientData, PClient);
+		GoBackToMainMenue();
+		break;
+
+	case enTransactions::TotalBalanced:
+		system("cls");
+		ShowedTotalAmount(ClientsFileName, VClientData);
+		GoBackToMainMenue();
+		break;
+
+	case enTransactions::MainMenu:
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+void TransactionsOpertions(vector<ClientData>& VClientData, ClientData& PClient)
+{
+
+	enTransactions TransactionType = enTransactions::MainMenu;
+	do {
+		system("cls");
+		ShowTransactionsMenuSceern();
+
+		TransactionType = ReadTransactionProcess("Please Enter Your Transaction You Want ?");
+
+		ExcutetUserChoiceForTransactions(TransactionType, VClientData, PClient);
+
+	} while (TransactionType != enTransactions::MainMenu);
+
 }
 
 void ExcutetUserChoice(MainMenueItems UserChoice, vector<ClientData>& VClientData, ClientData& PClient)
@@ -478,7 +731,14 @@ void ExcutetUserChoice(MainMenueItems UserChoice, vector<ClientData>& VClientDat
 
 	case MainMenueItems::FindClient:
 		system("cls");
-		FindAndShowClient(VClientData);
+		FindAndShowClient(VClientData, PClient);
+		GoBackToMainMenue();
+		break;
+
+	case MainMenueItems::Transactions:
+		system("cls");
+
+		TransactionsOpertions(VClientData, PClient);
 		GoBackToMainMenue();
 		break;
 
@@ -504,7 +764,8 @@ void ShowMainMenueScrean()
 	cout << "\t[3] Delete Client.\n";
 	cout << "\t[4] updata Client Info.\n";
 	cout << "\t[5] Find Client.\n";
-	cout << "\t[6] Exit.\n";
+	cout << "\t[6] Transactions.\n";
+	cout << "\t[7] Exit.\n";
 	cout << "=================================================\n";
 }
 
@@ -513,25 +774,30 @@ MainMenueItems ReadUserChoiceFromMainMenue()
 	short Userchoice = 0;
 	do {
 
-		cout << "choice choice what you want to do ? [1 to 6]\n";
+		cout << "choice choice what you want to do ? [1 to 7]\n";
 
 		cin >> Userchoice;
 
 
-	} while (Userchoice < 0 && Userchoice > 7);
+	} while (Userchoice < 0 && Userchoice > 8);
 	return (MainMenueItems)Userchoice;
 }
 
 void RunATMService()
 {
 	vector<ClientData> VClientData;
+
 	ClientData PClient;
+
 	MainMenueItems UserChoice;
+
 	LoadDataFromFileToVector(ClientsFileName, VClientData);
 	do
 	{
 		ShowMainMenueScrean();
+
 		UserChoice = ReadUserChoiceFromMainMenue();
+
 		ExcutetUserChoice(UserChoice, VClientData, PClient);
 
 	} while (UserChoice != MainMenueItems::Exit);
@@ -541,4 +807,3 @@ int main()
 {
 	RunATMService();
 }
-
